@@ -11,6 +11,7 @@ class Player(pygame.sprite.Sprite):
 
         self.image = self.frames[0]
         self.rect = self.image.get_rect(topleft=cords)
+        self.hitbox = self.rect.inflate(-5, -15)
 
         self.TILE_SIZE = TILE_SIZE
         self.speed = 5
@@ -36,22 +37,38 @@ class Player(pygame.sprite.Sprite):
             self.image = self.frames[0]
         else: self.facing.y = 0
 
-    def move(self) -> None:
+    def move(self, collide_groups:list) -> None:
 
         if self.facing.magnitude() != 0:
             self.facing = self.facing.normalize()
 
-        self.rect.x += self.facing.x * self.speed
-        self.rect.y += self.facing.y * self.speed
+        self.hitbox.x += self.facing.x * self.speed
+        self.check_collisions(collide_groups, "horizontal")
+        self.hitbox.y += self.facing.y * self.speed
+        self.check_collisions(collide_groups, "vertical")
+        self.rect.center = self.hitbox.center
 
-    # def check_collisions(self, collide_group: pygame.sprite.Group) -> None:
+    def check_collisions(self, collide_groups: list, direction: str) -> None:
 
-    #     for colliding_rect in collide_group.sprites():
-    #         if self.rect.colliderect(colliding_rect):
-    #             self.facing.xy = 0, 0
+        if direction == "horizontal":
+            for colliding_group in collide_groups:
+                for sprite in colliding_group:
+                    if sprite.hitbox.colliderect(self.hitbox):
+                        if self.facing.x > 0: # move right
+                            self.hitbox.right = sprite.hitbox.left
+                        elif self.facing.x < 0: # move left
+                            self.hitbox.left = sprite.hitbox.right
 
-    def update(self) -> None:
+        elif direction == "vertical":
+            for colliding_group in collide_groups:
+                for sprite in colliding_group:
+                    if sprite.hitbox.colliderect(self.hitbox):
+                        if self.facing.y > 0: # move down
+                            self.hitbox.bottom = sprite.hitbox.top
+                        elif self.facing.y < 0: # move up
+                            self.hitbox.top = sprite.hitbox.bottom
+
+    def update(self, collide_groups: list) -> None:
         
         self.get_input()
-        # self.check_collisions(collide_group)
-        self.move()
+        self.move(collide_groups)

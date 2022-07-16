@@ -1,6 +1,4 @@
-import pygame
 import json
-import sys
 
 from code.game import Game
 

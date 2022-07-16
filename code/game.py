@@ -19,8 +19,12 @@ class Game:
         self.game = True
         self.is_active = False
 
-        self.map = Map('map/map01_floor.csv', self.TILE_SIZE, settings["ORIGINAL_TILE_SIZE"])
-        self.player = pygame.sprite.GroupSingle( Player((32, 32), self.TILE_SIZE) )
+        self.map = Map(settings["paths"], self.TILE_SIZE, settings["ORIGINAL_TILE_SIZE"])
+        self.player = pygame.sprite.GroupSingle( Player((64, 64), self.TILE_SIZE) )
+
+        self.bg_music = pygame.mixer.Sound("sounds/CaveLoop.wav")
+        self.bg_music.set_volume(0.5)
+        self.bg_music.play(loops = -1)
 
     def run(self):
 
@@ -44,12 +48,18 @@ class Game:
                         if event.key == pygame.K_SPACE:
 
                             self.is_active = True
+                
+                if event.type == pygame.KEYDOWN:
+
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
 
             if self.is_active:
 
-                self.map.terrain_sprites.draw(self.screen)
-                self.map.wall_sprites.draw(self.screen)
-                self.player.update()
+                for group in self.map.bg_groups + self.map.fg_groups:
+                    group.draw(self.screen)
+                self.player.update(self.map.fg_groups)
                 self.player.draw(self.screen)
 
                 # Update screen

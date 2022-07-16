@@ -54,19 +54,33 @@ class Player(pygame.sprite.Sprite):
             for colliding_group in collide_groups:
                 for sprite in colliding_group:
                     if sprite.hitbox.colliderect(self.hitbox):
+
+                        move_dice = True if sprite.type == "dice" else False
+
                         if self.facing.x > 0: # move right
                             self.hitbox.right = sprite.hitbox.left
+                            if move_dice:
+                                sprite.roll("right")
                         elif self.facing.x < 0: # move left
                             self.hitbox.left = sprite.hitbox.right
+                            if move_dice:
+                                sprite.roll("left")
 
         elif direction == "vertical":
             for colliding_group in collide_groups:
                 for sprite in colliding_group:
                     if sprite.hitbox.colliderect(self.hitbox):
+
+                        move_dice = True if sprite.type == "dice" else False
+
                         if self.facing.y > 0: # move down
                             self.hitbox.bottom = sprite.hitbox.top
+                            if move_dice:
+                                    sprite.roll("bottom")
                         elif self.facing.y < 0: # move up
                             self.hitbox.top = sprite.hitbox.bottom
+                            if move_dice:
+                                    sprite.roll("top")
 
     def update(self, collide_groups: list) -> None:
         

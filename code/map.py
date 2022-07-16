@@ -8,6 +8,7 @@ class Tile(pygame.sprite.Sprite):
         self.image = pygame.Surface(size)
         self.image.fill("white")
         self.rect = self.image.get_rect(topleft = pos)
+        self.type = None
 
 class StaticTile(Tile):
 
@@ -18,9 +19,35 @@ class StaticTile(Tile):
     
 class Dice(StaticTile):
 
-    def __init__(self, pos: tuple | list, size: tuple | list, image: pygame.Surface) -> None:
+    def __init__(self, pos: tuple | list, size: tuple | list, image: pygame.Surface, TILE_SIZE: tuple|list) -> None:
         super().__init__(pos, size, image)
         self.hitbox = self.rect
+        self.type = "dice"
+        self.TILE_SIZE = TILE_SIZE
+        self.last_coords = pos
+
+    def roll(self, align: str) -> None:
+        
+        self.last_coords = self.hitbox.center
+        match align:
+            case "right":
+                self.hitbox.x += self.TILE_SIZE[0]
+            case "left":
+                self.hitbox.x -= self.TILE_SIZE[0]
+            case "bottom":
+                self.hitbox.y += self.TILE_SIZE[1]
+            case "top":
+                self.hitbox.y -= self.TILE_SIZE[1]
+
+    def collide_check(self, collide_groups) -> None:
+
+        for collide_group in collide_groups:
+            for sprite in collide_group:
+                if sprite.hitbox.colliderect(self.hitbox):
+                    self.hitbox.center = self.last_coords
+    
+    def update(self, collide_groups) -> None:
+        self.collide_check(collide_groups)
 
 class Map:
 
@@ -28,13 +55,15 @@ class Map:
 
         self.terrain = import_csv(paths[0])
         self.walls = import_csv(paths[1])
+        self.dices = import_csv(paths[2])
 
         self.TILE_SIZE = TILE_SIZE
         
         self.tile_list = import_cut_files(r"images\bricks.png", ORIGINAL_TILE_SIZE, self.TILE_SIZE)
+        self.dice_list = import_cut_files(r"images\dice5.png", ORIGINAL_TILE_SIZE, self.TILE_SIZE)
         
         self.bg_groups = [self.create_tile_group("floor", self.terrain)]
-        self.fg_groups = [self.create_tile_group("wall", self.walls)]
+        self.fg_groups = [self.create_tile_group("wall", self.walls), self.create_tile_group("dice", self.dices)]
 
     def create_tile_group(self, type: str, terrain: list):
 
@@ -55,6 +84,12 @@ class Map:
 
                         tile_surface = self.tile_list[int(val)]
                         sprite = StaticTile(pos, self.TILE_SIZE, tile_surface)
+                        sprite_group.add(sprite)
+
+                    elif type == "dice":
+
+                        tile_surface = self.dice_list[int(val)]
+                        sprite = Dice(pos, self.TILE_SIZE, tile_surface, self.TILE_SIZE)
                         sprite_group.add(sprite)
 
         return sprite_group

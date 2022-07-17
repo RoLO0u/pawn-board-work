@@ -16,7 +16,17 @@ class StaticTile(Tile):
         super().__init__(pos, size)
         self.image = image
         self.hitbox = self.rect.inflate(-10, -5)
+
+class FinalPoint(StaticTile):
+
+    def __init__(self, pos: tuple | list, size: tuple | list, image: pygame.Surface) -> None:
+        super().__init__(pos, size, image)
+        self.end_game = False
     
+    def update(self, dice_pos: tuple) -> None|bool:
+        if dice_pos == self.rect.center:
+            self.end_game = True
+
 class Dice(StaticTile):
 
     def __init__(self, pos: tuple | list, size: tuple | list, image: pygame.Surface, TILE_SIZE: tuple|list) -> None:
@@ -51,18 +61,20 @@ class Dice(StaticTile):
 
 class Map:
 
-    def __init__(self, paths: str, TILE_SIZE: tuple|list, ORIGINAL_TILE_SIZE: tuple|list) -> None:
+    def __init__(self, paths: list, TILE_SIZE: tuple|list, ORIGINAL_TILE_SIZE: tuple|list) -> None:
 
         self.terrain = import_csv(paths[0])
         self.walls = import_csv(paths[1])
         self.dices = import_csv(paths[2])
+        self.final_point = import_csv(paths[3])
 
         self.TILE_SIZE = TILE_SIZE
         
         self.tile_list = import_cut_files(r"images\bricks.png", ORIGINAL_TILE_SIZE, self.TILE_SIZE)
         self.dice_list = import_cut_files(r"images\dice5.png", ORIGINAL_TILE_SIZE, self.TILE_SIZE)
+        self.final_point_list = import_cut_files(r"images\final_point.png", ORIGINAL_TILE_SIZE, self.TILE_SIZE)
         
-        self.bg_groups = [self.create_tile_group("floor", self.terrain)]
+        self.bg_groups = [self.create_tile_group("floor", self.terrain), self.create_tile_group("final_point", self.final_point)]
         self.fg_groups = [self.create_tile_group("wall", self.walls), self.create_tile_group("dice", self.dices)]
 
     def create_tile_group(self, type: str, terrain: list):
@@ -90,6 +102,12 @@ class Map:
 
                         tile_surface = self.dice_list[int(val)]
                         sprite = Dice(pos, self.TILE_SIZE, tile_surface, self.TILE_SIZE)
+                        sprite_group.add(sprite)
+                    
+                    elif type == "final_point":
+
+                        tile_surface = self.final_point_list[int(val)]
+                        sprite = FinalPoint(pos, self.TILE_SIZE, tile_surface)
                         sprite_group.add(sprite)
 
         return sprite_group

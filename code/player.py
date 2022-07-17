@@ -22,17 +22,17 @@ class Player(pygame.sprite.Sprite):
 
         self.keys = pygame.key.get_pressed()
 
-        if self.keys[pygame.K_LEFT]:
+        if self.keys[pygame.K_LEFT] or self.keys[pygame.K_a]:
             self.facing.x = -1
             self.image = self.frames[0]
-        elif self.keys[pygame.K_RIGHT]:
+        elif self.keys[pygame.K_RIGHT] or self.keys[pygame.K_d]:
             self.facing.x = 1
             self.image = self.frames[0]
         else: self.facing.x = 0
-        if self.keys[pygame.K_UP]:
+        if self.keys[pygame.K_UP] or self.keys[pygame.K_w]:
             self.facing.y = -1
             self.image = self.frames[0]
-        elif self.keys[pygame.K_DOWN]:
+        elif self.keys[pygame.K_DOWN] or self.keys[pygame.K_s]:
             self.facing.y = 1
             self.image = self.frames[0]
         else: self.facing.y = 0
